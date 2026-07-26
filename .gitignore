@@ -12,6 +12,10 @@ dist
 dist-ssr
 *.local
 
+# Tauri — Rust build artifacts and generated schemas (installers land in target/)
+src-tauri/target
+src-tauri/gen/schemas
+
 # API keys live in browser localStorage only — never commit any env file
 .env
 .env.*
