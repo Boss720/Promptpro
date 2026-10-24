@@ -9,18 +9,21 @@ export default function Settings() {
   const adultUnlocked = useStore((s) => s.adultUnlocked);
   const setAdultUnlocked = useStore((s) => s.setAdultUnlocked);
 
-  const [status, setStatus] = useState<string | null>(null);
+  const [status, setStatus] = useState<{ ok: boolean; text: string } | null>(null);
   const [testing, setTesting] = useState(false);
+  const [showKey, setShowKey] = useState(false);
   const [confirmAdult, setConfirmAdult] = useState(false);
+
+  const activePreset = PRESETS.find((p) => p.baseUrl === provider.baseUrl && p.model === provider.model);
 
   async function test() {
     setTesting(true);
     setStatus(null);
     try {
       const out = await testConnection(provider);
-      setStatus(`OK — model replied: ${out}`);
+      setStatus({ ok: true, text: `OK — model replied: ${out}` });
     } catch (e) {
-      setStatus(`Failed — ${(e as Error).message}`);
+      setStatus({ ok: false, text: `Failed — ${(e as Error).message}` });
     } finally {
       setTesting(false);
     }
@@ -31,7 +34,7 @@ export default function Settings() {
       <section className="mb-10">
         <h2 className="mb-1 text-base font-semibold">Model provider</h2>
         <p className="mb-4 text-sm text-[var(--color-dim)]">
-          Used by the Enhancer. Everything runs in this browser — your key is stored in this browser's
+          Used by the Enhancer. Everything runs in this browser {'—'} your key is stored in this browser{"'"}s
           localStorage and is sent only to the base URL below. Nothing is written to disk in the project.
         </p>
 
@@ -40,7 +43,12 @@ export default function Settings() {
             <button
               key={p.id}
               onClick={() => setProvider({ shape: p.shape, baseUrl: p.baseUrl, model: p.model })}
-              className="rounded-md border border-[var(--color-edge)] px-3 py-1.5 text-sm text-[var(--color-dim)] hover:text-[var(--color-ink)]"
+              aria-pressed={activePreset?.id === p.id}
+              className={`rounded-md border px-3 py-1.5 text-sm ${
+                activePreset?.id === p.id
+                  ? 'border-[var(--color-accent)] text-[var(--color-accent)]'
+                  : 'border-[var(--color-edge)] text-[var(--color-dim)] hover:text-[var(--color-ink)]'
+              }`}
             >
               {p.label}
             </button>
@@ -65,6 +73,7 @@ export default function Settings() {
             <input
               value={provider.baseUrl}
               onChange={(e) => setProvider({ baseUrl: e.target.value })}
+              spellCheck={false}
               className="rounded-md border border-[var(--color-edge)] bg-[var(--color-panel)] px-2.5 py-1.5 text-sm outline-none focus:border-[var(--color-accent)]"
             />
           </label>
@@ -74,40 +83,68 @@ export default function Settings() {
             <input
               value={provider.model}
               onChange={(e) => setProvider({ model: e.target.value })}
+              spellCheck={false}
               className="rounded-md border border-[var(--color-edge)] bg-[var(--color-panel)] px-2.5 py-1.5 text-sm outline-none focus:border-[var(--color-accent)]"
             />
           </label>
 
           <label className="grid gap-1">
             <span className="text-xs text-[var(--color-dim)]">API key</span>
-            <input
-              type="password"
-              value={provider.apiKey}
-              onChange={(e) => setProvider({ apiKey: e.target.value })}
-              placeholder="sk-…"
-              className="rounded-md border border-[var(--color-edge)] bg-[var(--color-panel)] px-2.5 py-1.5 text-sm outline-none focus:border-[var(--color-accent)]"
-            />
+            <div className="flex gap-2">
+              <input
+                type={showKey ? 'text' : 'password'}
+                value={provider.apiKey}
+                onChange={(e) => setProvider({ apiKey: e.target.value })}
+                placeholder={'sk-…'}
+                autoComplete="off"
+                spellCheck={false}
+                className="min-w-0 flex-1 rounded-md border border-[var(--color-edge)] bg-[var(--color-panel)] px-2.5 py-1.5 text-sm outline-none focus:border-[var(--color-accent)]"
+              />
+              <button
+                onClick={() => setShowKey((v) => !v)}
+                className="rounded-md border border-[var(--color-edge)] px-3 py-1.5 text-sm text-[var(--color-dim)]"
+              >
+                {showKey ? 'Hide' : 'Show'}
+              </button>
+              <button
+                onClick={() => {
+                  setProvider({ apiKey: '' });
+                  setStatus(null);
+                }}
+                disabled={!provider.apiKey}
+                className="rounded-md border border-[var(--color-edge)] px-3 py-1.5 text-sm text-[var(--color-heat)] disabled:opacity-40"
+              >
+                Clear
+              </button>
+            </div>
           </label>
         </div>
 
         <div className="mt-4 flex items-center gap-3">
           <button
             onClick={test}
-            disabled={testing}
+            disabled={testing || !provider.apiKey}
             className="rounded-md bg-[var(--color-accent)] px-4 py-1.5 text-sm font-medium text-black disabled:opacity-40"
           >
             {testing ? 'Testing…' : 'Test connection'}
           </button>
-          {status && <span className="text-xs text-[var(--color-dim)]">{status}</span>}
+          {status && (
+            <span
+              role="status"
+              className={`text-xs ${status.ok ? 'text-[var(--color-dim)]' : 'text-[var(--color-heat)]'}`}
+            >
+              {status.text}
+            </span>
+          )}
         </div>
       </section>
 
       <section className="rounded-lg border border-[var(--color-edge)] p-5">
         <h2 className="mb-1 text-base font-semibold">Adult content</h2>
         <p className="mb-4 text-sm text-[var(--color-dim)]">
-          The Adult Fiction section holds explicit writing-craft prompts for fiction involving adult
-          characters. While this is off, those prompts are excluded from the library, the search index,
-          and the sidebar entirely.
+          The Adult Fiction section holds explicit writing-craft prompts for fiction involving adult characters.
+          While this is off, those prompts are excluded from the library, the search index, and the sidebar
+          entirely.
         </p>
 
         {adultUnlocked ? (

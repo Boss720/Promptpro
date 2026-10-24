@@ -348,7 +348,7 @@ Provide output as a communication calendar and messaging templates.`,
     category: 'business',
     tags: ['roadmap', 'prioritization', 'review'],
     description: 'Reviews a product/project roadmap for prioritization logic, strategic alignment, and balance.',
-    body: `You are reviewing a roadmap\'s prioritization.
+    body: `You are reviewing a roadmap's prioritization.
 
 Roadmap to review:
 {{roadmap}}

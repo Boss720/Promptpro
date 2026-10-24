@@ -69,38 +69,50 @@ export async function streamComplete({ system, user, config, signal, onToken }: 
   let buffer = '';
   let full = '';
 
-  for (;;) {
-    const { done, value } = await reader.read();
-    if (done) break;
-    buffer += decoder.decode(value, { stream: true });
+  try {
+    for (;;) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      buffer += decoder.decode(value, { stream: true });
 
-    const lines = buffer.split('\n');
-    buffer = lines.pop() ?? '';
+      const lines = buffer.split('\n');
+      buffer = lines.pop() ?? '';
 
-    for (const line of lines) {
-      const trimmed = line.trim();
-      if (!trimmed.startsWith('data:')) continue;
-      const payload = trimmed.slice(5).trim();
-      if (!payload || payload === '[DONE]') continue;
+      for (const line of lines) {
+        const trimmed = line.trim();
+        if (!trimmed.startsWith('data:')) continue;
+        const payload = trimmed.slice(5).trim();
+        if (!payload || payload === '[DONE]') continue;
 
-      let json: any;
-      try {
-        json = JSON.parse(payload);
-      } catch {
-        continue;
-      }
+        let json: any;
+        try {
+          json = JSON.parse(payload);
+        } catch {
+          continue;
+        }
 
-      const delta = isAnthropic
-        ? json.type === 'content_block_delta'
-          ? json.delta?.text
-          : undefined
-        : json.choices?.[0]?.delta?.content;
+        // Both shapes can report a mid-stream failure instead of a delta; without
+        // this the stream just stops and the user sees a truncated answer.
+        const streamError = json?.error?.message ?? (json?.type === 'error' ? json?.error?.message : undefined);
+        if (typeof streamError === 'string' && streamError) {
+          throw new LlmError(streamError);
+        }
 
-      if (typeof delta === 'string' && delta) {
-        full += delta;
-        onToken(delta);
+        const delta = isAnthropic
+          ? json.type === 'content_block_delta'
+            ? json.delta?.text
+            : undefined
+          : json.choices?.[0]?.delta?.content;
+
+        if (typeof delta === 'string' && delta) {
+          full += delta;
+          onToken(delta);
+        }
       }
     }
+  } finally {
+    // Releases the socket when the caller aborts or a mid-stream error throws.
+    await reader.cancel().catch(() => {});
   }
 
   return full;

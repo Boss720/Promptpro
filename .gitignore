@@ -30,3 +30,6 @@ src-tauri/gen/schemas
 *.njsproj
 *.sln
 *.sw?
+
+# Local-only Claude Code session settings
+.claude/settings.local.json

@@ -59,6 +59,17 @@ export const useStore = create<State>()(
       theme: 'dark',
       toggleTheme: () => set((s) => ({ theme: s.theme === 'dark' ? 'light' : 'dark' })),
     }),
-    { name: 'prompt-library' },
+    {
+      name: 'prompt-library',
+      version: 1,
+      // Only the data is persisted; actions are rebuilt on every load.
+      partialize: (s) => ({
+        adultUnlocked: s.adultUnlocked,
+        favorites: s.favorites,
+        custom: s.custom,
+        provider: s.provider,
+        theme: s.theme,
+      }),
+    },
   ),
 );

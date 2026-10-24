@@ -55,3 +55,15 @@ export const GATED_PROMPTS: Prompt[] = normalize(ADULT_PROMPTS);
 export function getPrompts(adultUnlocked: boolean): Prompt[] {
   return adultUnlocked ? [...SAFE_PROMPTS, ...GATED_PROMPTS] : SAFE_PROMPTS;
 }
+
+if (import.meta.env.DEV) {
+  const seen = new Set<string>();
+  const dupes = [...SAFE_PROMPTS, ...GATED_PROMPTS]
+    .map((p) => p.id)
+    .filter((id) => (seen.has(id) ? true : (seen.add(id), false)));
+  if (dupes.length) {
+    // Duplicate ids silently break favorites and the detail panel, so surface
+    // them the moment a prompt file is added.
+    console.warn('Duplicate prompt ids:', [...new Set(dupes)]);
+  }
+}
