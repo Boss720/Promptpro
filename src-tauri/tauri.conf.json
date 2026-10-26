@@ -1,7 +1,7 @@
 {
   "$schema": "../node_modules/@tauri-apps/cli/config.schema.json",
   "productName": "Prompt Library",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "identifier": "com.bosscube1.prompt-library",
   "build": {
     "frontendDist": "../dist",

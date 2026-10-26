@@ -1,4 +1,4 @@
-export type ProviderShape = 'anthropic' | 'openai';
+export type ProviderShape = 'anthropic' | 'openai' | 'google';
 
 export type ProviderConfig = {
   shape: ProviderShape;
@@ -11,6 +11,7 @@ export type Preset = { id: string; label: string } & Omit<ProviderConfig, 'apiKe
 
 export const PRESETS: Preset[] = [
   { id: 'anthropic', label: 'Anthropic', shape: 'anthropic', baseUrl: 'https://api.anthropic.com', model: 'claude-sonnet-5' },
+  { id: 'google', label: 'Google AI Studio', shape: 'google', baseUrl: 'https://generativelanguage.googleapis.com/v1beta/openai', model: 'gemini-3.8-flash' },
   { id: 'openai', label: 'OpenAI', shape: 'openai', baseUrl: 'https://api.openai.com', model: 'gpt-4o' },
   { id: 'openrouter', label: 'OpenRouter', shape: 'openai', baseUrl: 'https://openrouter.ai/api', model: 'anthropic/claude-sonnet-4.5' },
   { id: 'nanogpt', label: 'nano-gpt.com', shape: 'openai', baseUrl: 'https://nano-gpt.com/api', model: 'chatgpt-4o-latest' },
@@ -35,7 +36,11 @@ export async function streamComplete({ system, user, config, signal, onToken }: 
   const base = config.baseUrl.replace(/\/+$/, '');
   const isAnthropic = config.shape === 'anthropic';
 
-  const url = isAnthropic ? `${base}/v1/messages` : `${base}/v1/chat/completions`;
+  const url = isAnthropic
+    ? `${base}/v1/messages`
+    : config.shape === 'google'
+      ? `${base}/chat/completions`
+      : `${base}/v1/chat/completions`;
 
   const headers: Record<string, string> = { 'content-type': 'application/json' };
   if (isAnthropic) {

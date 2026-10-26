@@ -64,6 +64,7 @@ export default function Settings() {
               className="rounded-md border border-[var(--color-edge)] bg-[var(--color-panel)] px-2.5 py-1.5 text-sm"
             >
               <option value="anthropic">Anthropic (/v1/messages)</option>
+              <option value="google">Google AI Studio (Gemini, OpenAI-compatible)</option>
               <option value="openai">OpenAI-compatible (/v1/chat/completions)</option>
             </select>
           </label>
@@ -95,7 +96,7 @@ export default function Settings() {
                 type={showKey ? 'text' : 'password'}
                 value={provider.apiKey}
                 onChange={(e) => setProvider({ apiKey: e.target.value })}
-                placeholder={'sk-…'}
+                placeholder={provider.shape === 'google' ? 'AIza…' : 'sk-…'}
                 autoComplete="off"
                 spellCheck={false}
                 className="min-w-0 flex-1 rounded-md border border-[var(--color-edge)] bg-[var(--color-panel)] px-2.5 py-1.5 text-sm outline-none focus:border-[var(--color-accent)]"
@@ -119,6 +120,15 @@ export default function Settings() {
             </div>
           </label>
         </div>
+
+        {provider.shape === 'google' && (
+          <p className="mt-3 text-sm text-[var(--color-dim)]">
+            Paste your Gemini API key from Google AI Studio. Get a key at{' '}
+            <a href="https://aistudio.google.com/apikey" target="_blank" rel="noreferrer"
+              className="text-[var(--color-accent)] underline">aistudio.google.com/apikey</a>.
+            {' '}You can change the model above to any Gemini model available to your key.
+          </p>
+        )}
 
         <div className="mt-4 flex items-center gap-3">
           <button

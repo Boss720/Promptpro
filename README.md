@@ -25,8 +25,8 @@ That produces two installers under `src-tauri/target/release/bundle/`:
 
 | File | Size | Install |
 | --- | --- | --- |
-| `nsis/Prompt Library_0.1.0_x64-setup.exe` | 1.8 MB | per-user, no admin prompt |
-| `msi/Prompt Library_0.1.0_x64_en-US.msi` | 2.4 MB | per-machine, needs admin |
+| `nsis/Prompt Library_0.1.1_x64-setup.exe` | 1.8 MB | per-user, no admin prompt |
+| `msi/Prompt Library_0.1.1_x64_en-US.msi` | 2.4 MB | per-machine, needs admin |
 
 Neither is code-signed, so SmartScreen will warn on first run — "More info" → "Run anyway".
 
@@ -55,8 +55,10 @@ your browser's — the two are separate stores. Use **Export** in My Prompts to 
 
 ## Provider setup
 
-Settings → pick a preset (Anthropic, OpenAI, OpenRouter, nano-gpt.com, Ollama) or enter a base URL
+Settings → pick a preset (Anthropic, Google AI Studio, OpenAI, OpenRouter, nano-gpt.com, Ollama) or enter a base URL
 manually, then paste your API key and hit **Test connection**.
+
+For **Google AI Studio**, select its preset, paste a Gemini API key from https://aistudio.google.com/apikey, and test the connection. The model is editable. Google uses its OpenAI-compatible endpoint at `https://generativelanguage.googleapis.com/v1beta/openai/chat/completions`.
 
 Two API shapes are supported and cover almost everything: Anthropic's `/v1/messages` and the
 OpenAI-compatible `/v1/chat/completions`.
